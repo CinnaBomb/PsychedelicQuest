@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useGameState } from '@/lib/stores/useGameState';
 import { useAudio } from '@/lib/stores/useAudio';
-import { moveForward, moveBackward, turnLeft, turnRight } from '@/lib/gameLogic/movement';
+import { moveForward, moveBackward, turnLeft, turnRight, strafeLeft, strafeRight } from '@/lib/gameLogic/movement';
 import { isValidPosition, getDungeonCell } from '@/lib/gameLogic/dungeon';
 
 interface TouchButtonProps {
@@ -14,18 +14,37 @@ interface TouchButtonProps {
 
 function TouchButton({ onPress, onRelease, children, className = '', disabled = false }: TouchButtonProps) {
   const [isPressed, setIsPressed] = useState(false);
+  const [activePointerId, setActivePointerId] = useState<number | null>(null);
 
-  const handleStart = (e: React.TouchEvent | React.MouseEvent) => {
-    if (disabled) return;
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (disabled || activePointerId !== null) return;
     e.preventDefault();
     setIsPressed(true);
+    setActivePointerId(e.pointerId);
     onPress();
   };
 
-  const handleEnd = (e: React.TouchEvent | React.MouseEvent) => {
-    if (disabled) return;
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (disabled || activePointerId !== e.pointerId) return;
     e.preventDefault();
     setIsPressed(false);
+    setActivePointerId(null);
+    onRelease();
+  };
+
+  const handlePointerCancel = (e: React.PointerEvent) => {
+    if (disabled || activePointerId !== e.pointerId) return;
+    e.preventDefault();
+    setIsPressed(false);
+    setActivePointerId(null);
+    onRelease();
+  };
+
+  const handlePointerLeave = (e: React.PointerEvent) => {
+    if (disabled || activePointerId !== e.pointerId) return;
+    e.preventDefault();
+    setIsPressed(false);
+    setActivePointerId(null);
     onRelease();
   };
 
@@ -40,12 +59,10 @@ function TouchButton({ onPress, onRelease, children, className = '', disabled = 
         ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer active:scale-90'}
         ${className}
       `}
-      onTouchStart={handleStart}
-      onTouchEnd={handleEnd}
-      onTouchCancel={handleEnd}
-      onMouseDown={handleStart}
-      onMouseUp={handleEnd}
-      onMouseLeave={handleEnd}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
+      onPointerLeave={handlePointerLeave}
       onContextMenu={(e) => e.preventDefault()}
       disabled={disabled}
       style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -85,6 +102,26 @@ export default function TouchControls() {
     }
   };
 
+  const handleStrafeLeft = () => {
+    const newPos = strafeLeft(playerState);
+    if (isValidPosition(dungeon, newPos)) {
+      updatePlayerPosition(newPos.x, newPos.z);
+      console.log('Touch: Strafed left to:', newPos);
+    } else {
+      console.log('Touch: Cannot strafe left - blocked');
+    }
+  };
+
+  const handleStrafeRight = () => {
+    const newPos = strafeRight(playerState);
+    if (isValidPosition(dungeon, newPos)) {
+      updatePlayerPosition(newPos.x, newPos.z);
+      console.log('Touch: Strafed right to:', newPos);
+    } else {
+      console.log('Touch: Cannot strafe right - blocked');
+    }
+  };
+
   const handleTurnLeft = () => {
     const newFacing = turnLeft(playerState.facing);
     updatePlayerFacing(newFacing);
@@ -110,40 +147,44 @@ export default function TouchControls() {
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
       {/* Movement Controls - Left Side */}
-      <div className="absolute left-2 bottom-4 pointer-events-auto">
+      <div 
+        className="absolute pointer-events-auto"
+        style={{
+          left: 'max(8px, env(safe-area-inset-left, 8px))',
+          bottom: 'max(16px, env(safe-area-inset-bottom, 16px))'
+        }}
+      >
         <div className="flex flex-col items-center space-y-3 p-2">
-          {/* Forward Button */}
+          {/* Backward Button (Up Arrow - Reversed) */}
           <TouchButton
-            onPress={handleMoveForward}
+            onPress={handleMoveBackward}
             onRelease={() => {}}
             className="w-20 h-20 text-2xl sm:w-16 sm:h-16 sm:text-xl"
           >
             ↑
           </TouchButton>
           
-          {/* Left and Right Movement (Disabled for now) */}
+          {/* Left and Right Strafing */}
           <div className="flex space-x-3">
             <TouchButton
-              onPress={() => {}}
+              onPress={handleStrafeLeft}
               onRelease={() => {}}
               className="w-20 h-20 text-2xl sm:w-16 sm:h-16 sm:text-xl"
-              disabled
             >
               ←
             </TouchButton>
             <TouchButton
-              onPress={() => {}}
+              onPress={handleStrafeRight}
               onRelease={() => {}}
               className="w-20 h-20 text-2xl sm:w-16 sm:h-16 sm:text-xl"
-              disabled
             >
               →
             </TouchButton>
           </div>
           
-          {/* Backward Button */}
+          {/* Forward Button (Down Arrow - Reversed) */}
           <TouchButton
-            onPress={handleMoveBackward}
+            onPress={handleMoveForward}
             onRelease={() => {}}
             className="w-20 h-20 text-2xl sm:w-16 sm:h-16 sm:text-xl"
           >
@@ -153,7 +194,13 @@ export default function TouchControls() {
       </div>
 
       {/* Turning Controls - Right Side */}
-      <div className="absolute right-2 bottom-4 pointer-events-auto">
+      <div 
+        className="absolute pointer-events-auto"
+        style={{
+          right: 'max(8px, env(safe-area-inset-right, 8px))',
+          bottom: 'max(16px, env(safe-area-inset-bottom, 16px))'
+        }}
+      >
         <div className="flex flex-col items-center space-y-3 p-2">
           {/* Interact Button */}
           <TouchButton
