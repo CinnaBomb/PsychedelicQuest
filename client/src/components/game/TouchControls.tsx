@@ -51,7 +51,7 @@ function TouchButton({ onPress, onRelease, children, className = '', disabled = 
   return (
     <button
       className={`
-        select-none touch-manipulation bg-gray-900/90 hover:bg-gray-800/90 
+        select-none bg-gray-900/90 hover:bg-gray-800/90 
         text-white border-2 border-gray-500 rounded-xl shadow-lg
         flex items-center justify-center font-bold text-xl
         transition-all duration-100 backdrop-blur-sm
@@ -65,7 +65,10 @@ function TouchButton({ onPress, onRelease, children, className = '', disabled = 
       onPointerLeave={handlePointerLeave}
       onContextMenu={(e) => e.preventDefault()}
       disabled={disabled}
-      style={{ WebkitTapHighlightColor: 'transparent' }}
+      style={{ 
+        WebkitTapHighlightColor: 'transparent',
+        touchAction: 'manipulation'
+      }}
     >
       {children}
     </button>
@@ -150,8 +153,8 @@ export default function TouchControls() {
       <div 
         className="absolute pointer-events-auto"
         style={{
-          left: 'max(8px, env(safe-area-inset-left, 8px))',
-          bottom: 'max(16px, env(safe-area-inset-bottom, 16px))'
+          left: 'max(8px, env(safe-area-inset-left))',
+          bottom: 'max(16px, env(safe-area-inset-bottom))'
         }}
       >
         <div className="flex flex-col items-center space-y-3 p-2">
@@ -197,8 +200,8 @@ export default function TouchControls() {
       <div 
         className="absolute pointer-events-auto"
         style={{
-          right: 'max(8px, env(safe-area-inset-right, 8px))',
-          bottom: 'max(16px, env(safe-area-inset-bottom, 16px))'
+          right: 'max(8px, env(safe-area-inset-right))',
+          bottom: 'max(16px, env(safe-area-inset-bottom))'
         }}
       >
         <div className="flex flex-col items-center space-y-3 p-2">
