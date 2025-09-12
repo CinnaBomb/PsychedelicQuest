@@ -75,6 +75,91 @@ function TouchButton({ onPress, onRelease, children, className = '', disabled = 
   );
 }
 
+interface TurningButtonProps {
+  onPress: () => void;
+  onRelease: () => void;
+  children: React.ReactNode;
+  className?: string;
+  disabled?: boolean;
+  direction: 'left' | 'right';
+}
+
+function TurningButton({ onPress, onRelease, children, className = '', disabled = false, direction }: TurningButtonProps) {
+  const [isPressed, setIsPressed] = useState(false);
+  const [activePointerId, setActivePointerId] = useState<number | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (disabled || activePointerId !== null) return;
+    e.preventDefault();
+    setIsPressed(true);
+    setActivePointerId(e.pointerId);
+    setIsAnimating(true);
+    onPress();
+    // Stop animation after a short duration
+    setTimeout(() => setIsAnimating(false), 200);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (disabled || activePointerId !== e.pointerId) return;
+    e.preventDefault();
+    setIsPressed(false);
+    setActivePointerId(null);
+    onRelease();
+  };
+
+  const handlePointerCancel = (e: React.PointerEvent) => {
+    if (disabled || activePointerId !== e.pointerId) return;
+    e.preventDefault();
+    setIsPressed(false);
+    setActivePointerId(null);
+    setIsAnimating(false);
+    onRelease();
+  };
+
+  const handlePointerLeave = (e: React.PointerEvent) => {
+    if (disabled || activePointerId !== e.pointerId) return;
+    e.preventDefault();
+    setIsPressed(false);
+    setActivePointerId(null);
+    onRelease();
+  };
+
+  const animationStyle = isAnimating ? {
+    transform: direction === 'left' ? 'rotate(-15deg)' : 'rotate(15deg)',
+    transition: 'transform 200ms ease-out'
+  } : {
+    transition: 'transform 200ms ease-out'
+  };
+
+  return (
+    <button
+      className={`
+        select-none bg-gray-900/90 hover:bg-gray-800/90 
+        text-white border-2 border-gray-500 rounded-xl shadow-lg
+        flex items-center justify-center font-bold text-xl
+        transition-all duration-100 backdrop-blur-sm
+        ${isPressed ? 'bg-gray-600/90 scale-90 shadow-inner' : 'shadow-md hover:shadow-lg'}
+        ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer active:scale-90'}
+        ${className}
+      `}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerCancel}
+      onPointerLeave={handlePointerLeave}
+      onContextMenu={(e) => e.preventDefault()}
+      disabled={disabled}
+      style={{ 
+        WebkitTapHighlightColor: 'transparent',
+        touchAction: 'manipulation',
+        ...animationStyle
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function TouchControls() {
   const { 
     playerState, 
@@ -167,17 +252,17 @@ export default function TouchControls() {
             ↑
           </TouchButton>
           
-          {/* Left and Right Strafing */}
+          {/* Left and Right Strafing (Reversed) */}
           <div className="flex space-x-3">
             <TouchButton
-              onPress={handleStrafeLeft}
+              onPress={handleStrafeRight}
               onRelease={() => {}}
               className="w-20 h-20 text-2xl sm:w-16 sm:h-16 sm:text-xl"
             >
               ←
             </TouchButton>
             <TouchButton
-              onPress={handleStrafeRight}
+              onPress={handleStrafeLeft}
               onRelease={() => {}}
               className="w-20 h-20 text-2xl sm:w-16 sm:h-16 sm:text-xl"
             >
@@ -216,20 +301,22 @@ export default function TouchControls() {
           
           {/* Turn Controls */}
           <div className="flex space-x-3">
-            <TouchButton
+            <TurningButton
               onPress={handleTurnLeft}
               onRelease={() => {}}
+              direction="left"
               className="w-20 h-20 text-2xl sm:w-16 sm:h-16 sm:text-xl"
             >
               ↺
-            </TouchButton>
-            <TouchButton
+            </TurningButton>
+            <TurningButton
               onPress={handleTurnRight}
               onRelease={() => {}}
+              direction="right"
               className="w-20 h-20 text-2xl sm:w-16 sm:h-16 sm:text-xl"
             >
               ↻
-            </TouchButton>
+            </TurningButton>
           </div>
         </div>
       </div>
