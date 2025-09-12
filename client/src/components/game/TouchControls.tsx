@@ -252,17 +252,17 @@ export default function TouchControls() {
             ↑
           </TouchButton>
           
-          {/* Left and Right Strafing (Reversed) */}
+          {/* Left and Right Strafing */}
           <div className="flex space-x-3">
             <TouchButton
-              onPress={handleStrafeRight}
+              onPress={handleStrafeLeft}
               onRelease={() => {}}
               className="w-20 h-20 text-2xl sm:w-16 sm:h-16 sm:text-xl"
             >
               ←
             </TouchButton>
             <TouchButton
-              onPress={handleStrafeLeft}
+              onPress={handleStrafeRight}
               onRelease={() => {}}
               className="w-20 h-20 text-2xl sm:w-16 sm:h-16 sm:text-xl"
             >

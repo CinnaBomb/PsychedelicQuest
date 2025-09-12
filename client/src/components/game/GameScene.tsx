@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { KeyboardControls, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -37,8 +37,36 @@ const keyMap = [
 function CameraController() {
   const cameraRef = useRef<THREE.Camera>(null);
   const { playerState } = useGameState();
+  
+  // Track current and target angles for smooth rotation
+  const [currentAngle, setCurrentAngle] = useState(0);
+  const [targetAngle, setTargetAngle] = useState(0);
 
-  useFrame(({ camera }) => {
+  // Update target angle when player facing changes
+  useEffect(() => {
+    const newTargetAngle = playerState.facing * Math.PI / 2;
+    setTargetAngle(newTargetAngle);
+  }, [playerState.facing]);
+
+  useFrame(({ camera }, delta) => {
+    // Smoothly interpolate between current and target angle
+    const rotationSpeed = 4; // Adjust this for faster/slower rotation
+    const angleDiff = targetAngle - currentAngle;
+    
+    // Handle angle wrapping (e.g., from 270° to 0°)
+    let shortestAngleDiff = angleDiff;
+    if (Math.abs(angleDiff) > Math.PI) {
+      if (angleDiff > 0) {
+        shortestAngleDiff = angleDiff - 2 * Math.PI;
+      } else {
+        shortestAngleDiff = angleDiff + 2 * Math.PI;
+      }
+    }
+    
+    // Interpolate smoothly
+    const newCurrentAngle = currentAngle + shortestAngleDiff * rotationSpeed * delta;
+    setCurrentAngle(newCurrentAngle);
+    
     // Position camera behind and above the player
     const offset = new THREE.Vector3(0, 2, 3);
     const playerPosition = new THREE.Vector3(
@@ -47,9 +75,8 @@ function CameraController() {
       playerState.position.z
     );
     
-    // Rotate offset based on player facing direction
-    const angle = playerState.facing * Math.PI / 2;
-    offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), angle);
+    // Rotate offset based on interpolated angle (smooth rotation)
+    offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), newCurrentAngle);
     
     camera.position.copy(playerPosition.add(offset));
     
