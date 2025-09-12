@@ -7,6 +7,7 @@ import { useKeyboardControls } from '@react-three/drei';
 
 import Player from './Player';
 import Dungeon from './Dungeon';
+import TouchControls from './TouchControls';
 import { useGameState } from '@/lib/stores/useGameState';
 import { useAudio } from '@/lib/stores/useAudio';
 import { moveForward, moveBackward, turnLeft, turnRight } from '@/lib/gameLogic/movement';
@@ -155,29 +156,34 @@ function Lights() {
 
 export default function GameScene() {
   return (
-    <KeyboardControls map={keyMap}>
-      <Canvas
-        shadows
-        camera={{
-          position: [3, 2, 6],
-          fov: 60,
-          near: 0.1,
-          far: 1000
-        }}
-        gl={{
-          antialias: true,
-          powerPreference: "default"
-        }}
-      >
-        <color attach="background" args={["#1a1a1a"]} />
-        
-        <Lights />
-        <CameraController />
-        <PlayerController />
-        
-        <Player />
-        <Dungeon />
-      </Canvas>
-    </KeyboardControls>
+    <div className="relative w-full h-full">
+      <KeyboardControls map={keyMap}>
+        <Canvas
+          shadows
+          camera={{
+            position: [3, 2, 6],
+            fov: 60,
+            near: 0.1,
+            far: 1000
+          }}
+          gl={{
+            antialias: true,
+            powerPreference: "default"
+          }}
+        >
+          <color attach="background" args={["#1a1a1a"]} />
+          
+          <Lights />
+          <CameraController />
+          <PlayerController />
+          
+          <Player />
+          <Dungeon />
+        </Canvas>
+      </KeyboardControls>
+      
+      {/* Touch Controls Overlay */}
+      <TouchControls />
+    </div>
   );
 }
