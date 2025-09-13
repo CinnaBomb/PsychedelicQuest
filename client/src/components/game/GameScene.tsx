@@ -67,26 +67,23 @@ function CameraController() {
     const newCurrentAngle = currentAngle + shortestAngleDiff * rotationSpeed * delta;
     setCurrentAngle(newCurrentAngle);
     
-    // Position camera behind and above the player
-    const offset = new THREE.Vector3(0, 2, 3);
+    // Position camera at player's eye level (first person)
+    const eyeHeight = 1.6; // Eye level height
     const playerPosition = new THREE.Vector3(
       playerState.position.x,
-      0.5,
+      eyeHeight,
       playerState.position.z
     );
     
-    // Rotate offset based on interpolated angle (smooth rotation)
-    offset.applyAxisAngle(new THREE.Vector3(0, 1, 0), newCurrentAngle);
+    // Set camera at player position
+    camera.position.copy(playerPosition);
     
-    camera.position.copy(playerPosition.add(offset));
+    // Look in the direction the player is facing
+    const forwardDirection = new THREE.Vector3(0, 0, -1); // Default forward is negative Z
+    forwardDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), newCurrentAngle);
     
-    // Look at player position
-    const lookAt = new THREE.Vector3(
-      playerState.position.x,
-      0.5,
-      playerState.position.z
-    );
-    camera.lookAt(lookAt);
+    const lookAtTarget = playerPosition.clone().add(forwardDirection);
+    camera.lookAt(lookAtTarget);
   });
 
   return null;
