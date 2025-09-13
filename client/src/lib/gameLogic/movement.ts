@@ -10,16 +10,16 @@ export const DIRECTIONS: Direction[] = [
 export function moveForward(playerState: PlayerState): Position {
   const direction = DIRECTIONS[playerState.facing];
   return {
-    x: playerState.position.x + direction.x,
-    z: playerState.position.z + direction.z
+    x: playerState.position.x - direction.x,
+    z: playerState.position.z - direction.z
   };
 }
 
 export function moveBackward(playerState: PlayerState): Position {
   const direction = DIRECTIONS[playerState.facing];
   return {
-    x: playerState.position.x - direction.x,
-    z: playerState.position.z - direction.z
+    x: playerState.position.x + direction.x,
+    z: playerState.position.z + direction.z
   };
 }
 
