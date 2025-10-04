@@ -44,7 +44,7 @@ function CameraController() {
 
   // Update target angle when player facing changes
   useEffect(() => {
-    const newTargetAngle = playerState.facing * Math.PI / 2;
+    const newTargetAngle = -playerState.facing * Math.PI / 2; // Negative for correct rotation
     setTargetAngle(newTargetAngle);
   }, [playerState.facing]);
 
