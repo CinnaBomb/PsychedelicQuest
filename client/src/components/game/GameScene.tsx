@@ -51,20 +51,18 @@ function CameraController() {
   useFrame(({ camera }, delta) => {
     // Smoothly interpolate between current and target angle
     const rotationSpeed = 4; // Adjust this for faster/slower rotation
-    const angleDiff = targetAngle - currentAngle;
+    let angleDiff = targetAngle - currentAngle;
     
-    // Handle angle wrapping (e.g., from 270° to 0°)
-    let shortestAngleDiff = angleDiff;
-    if (Math.abs(angleDiff) > Math.PI) {
-      if (angleDiff > 0) {
-        shortestAngleDiff = angleDiff - 2 * Math.PI;
-      } else {
-        shortestAngleDiff = angleDiff + 2 * Math.PI;
-      }
+    // Handle angle wrapping - always take the shortest path
+    while (angleDiff > Math.PI) {
+      angleDiff -= 2 * Math.PI;
+    }
+    while (angleDiff < -Math.PI) {
+      angleDiff += 2 * Math.PI;
     }
     
     // Interpolate smoothly
-    const newCurrentAngle = currentAngle + shortestAngleDiff * rotationSpeed * delta;
+    const newCurrentAngle = currentAngle + angleDiff * rotationSpeed * delta;
     setCurrentAngle(newCurrentAngle);
     
     // Position camera at player's eye level (first person)
@@ -99,6 +97,11 @@ function PlayerController() {
   } = useGameState();
   
   const { playHit } = useAudio();
+  const lastTurnLeftState = useRef(false);
+  const lastTurnRightState = useRef(false);
+  const lastTurnLeftTime = useRef(0);
+  const lastTurnRightTime = useRef(0);
+  const TURN_DEBOUNCE_MS = 150; // Minimum time between turns
 
   useEffect(() => {
     const unsubscribe = subscribe(
@@ -146,22 +149,27 @@ function PlayerController() {
           }
         }
         
-        // Handle turning
-        if (state.turnLeft) {
+        // Handle turning - only on key press (not held) with debounce
+        const now = Date.now();
+        if (state.turnLeft && !lastTurnLeftState.current && (now - lastTurnLeftTime.current) > TURN_DEBOUNCE_MS) {
           updatePlayerFacing((currentFacing) => {
             const newFacing = turnLeft(currentFacing);
-            console.log('Turned left, now facing:', newFacing);
+            console.log('Q PRESSED: Turned left from', currentFacing, 'to', newFacing, ['North', 'East', 'South', 'West'][newFacing]);
             return newFacing;
           });
+          lastTurnLeftTime.current = now;
         }
+        lastTurnLeftState.current = state.turnLeft;
         
-        if (state.turnRight) {
+        if (state.turnRight && !lastTurnRightState.current && (now - lastTurnRightTime.current) > TURN_DEBOUNCE_MS) {
           updatePlayerFacing((currentFacing) => {
             const newFacing = turnRight(currentFacing);
-            console.log('Turned right, now facing:', newFacing);
+            console.log('E PRESSED: Turned right from', currentFacing, 'to', newFacing, ['North', 'East', 'South', 'West'][newFacing]);
             return newFacing;
           });
+          lastTurnRightTime.current = now;
         }
+        lastTurnRightState.current = state.turnRight;
         
         // Handle interaction
         if (state.interact) {

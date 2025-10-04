@@ -9,13 +9,15 @@ import { CHARACTER_CLASSES } from '@/lib/gameLogic/characters';
 
 export default function GameUI() {
   const { party, activeCharacterIndex } = useParty();
-  const { phase, setPhase } = useGameState();
+  const { phase, setPhase, playerState } = useGameState();
   const { currentEnemy } = useCombat();
   const [showPartyDetails, setShowPartyDetails] = useState(false);
 
   if (party.length === 0) return null;
 
   const activeCharacter = party[activeCharacterIndex];
+  const directionNames = ['North', 'East', 'South', 'West'];
+  const currentDirection = directionNames[playerState.facing];
 
   return (
     <div className="fixed inset-0 pointer-events-none">
@@ -64,31 +66,47 @@ export default function GameUI() {
           </Card>
 
           {/* Game Controls */}
-          <div className="space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowPartyDetails(!showPartyDetails)}
-              className="bg-black/80 border-gray-600 text-white hover:bg-gray-700"
-            >
-              Party
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPhase('inventory')}
-              className="bg-black/80 border-gray-600 text-white hover:bg-gray-700"
-            >
-              Inventory
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPhase('menu')}
-              className="bg-black/80 border-gray-600 text-white hover:bg-gray-700"
-            >
-              Menu
-            </Button>
+          <div className="flex items-center space-x-4">
+            {/* Compass Indicator */}
+            <Card className="bg-black/90 border-gray-600 text-white">
+              <CardContent className="p-3 text-center">
+                <div className="text-xs text-gray-400 mb-1">Facing</div>
+                <div className="text-lg font-bold text-yellow-400">{currentDirection}</div>
+                <div className="text-xs text-gray-400 mt-1">
+                  {playerState.facing === 0 && '↑'}
+                  {playerState.facing === 1 && '→'}
+                  {playerState.facing === 2 && '↓'}
+                  {playerState.facing === 3 && '←'}
+                </div>
+              </CardContent>
+            </Card>
+            
+            <div className="space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowPartyDetails(!showPartyDetails)}
+                className="bg-black/80 border-gray-600 text-white hover:bg-gray-700"
+              >
+                Party
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPhase('inventory')}
+                className="bg-black/80 border-gray-600 text-white hover:bg-gray-700"
+              >
+                Inventory
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPhase('menu')}
+                className="bg-black/80 border-gray-600 text-white hover:bg-gray-700"
+              >
+                Menu
+              </Button>
+            </div>
           </div>
         </div>
       </div>
