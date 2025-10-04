@@ -24,11 +24,11 @@ export function moveBackward(playerState: PlayerState): Position {
 }
 
 export function turnLeft(facing: number): number {
-  return (facing + 1) % 4;
+  return (facing + 3) % 4;
 }
 
 export function turnRight(facing: number): number {
-  return (facing + 3) % 4;
+  return (facing + 1) % 4;
 }
 
 export function getDirectionVector(facing: number): Direction {

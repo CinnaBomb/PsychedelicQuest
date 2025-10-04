@@ -44,7 +44,7 @@ function CameraController() {
 
   // Update target angle when player facing changes
   useEffect(() => {
-    const newTargetAngle = -playerState.facing * Math.PI / 2; // Negative for correct rotation
+    const newTargetAngle = -playerState.facing * Math.PI / 2;
     setTargetAngle(newTargetAngle);
   }, [playerState.facing]);
 
@@ -148,15 +148,19 @@ function PlayerController() {
         
         // Handle turning
         if (state.turnLeft) {
-          const newFacing = turnRight(playerState.facing);
-          updatePlayerFacing(newFacing);
-          console.log('Turned left, now facing:', newFacing);
+          updatePlayerFacing((currentFacing) => {
+            const newFacing = turnLeft(currentFacing);
+            console.log('Turned left, now facing:', newFacing);
+            return newFacing;
+          });
         }
         
         if (state.turnRight) {
-          const newFacing = turnLeft(playerState.facing);
-          updatePlayerFacing(newFacing);
-          console.log('Turned right, now facing:', newFacing);
+          updatePlayerFacing((currentFacing) => {
+            const newFacing = turnRight(currentFacing);
+            console.log('Turned right, now facing:', newFacing);
+            return newFacing;
+          });
         }
         
         // Handle interaction

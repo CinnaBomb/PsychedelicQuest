@@ -14,7 +14,7 @@ interface GameState {
   setGameName: (name: string) => void;
   initializeGame: () => void;
   updatePlayerPosition: (x: number, z: number) => void;
-  updatePlayerFacing: (facing: number) => void;
+  updatePlayerFacing: (facing: number | ((current: number) => number)) => void;
   resetGame: () => void;
 }
 
@@ -53,14 +53,19 @@ export const useGameState = create<GameState>()(
       }));
     },
     
-    updatePlayerFacing: (facing) => {
-      set((state) => ({
-        playerState: {
-          ...state.playerState,
-          facing,
-          direction: { x: 0, z: -1 } // Will be calculated based on facing
-        }
-      }));
+    updatePlayerFacing: (facing: number | ((current: number) => number)) => {
+      set((state) => {
+        const newFacing = typeof facing === 'function' 
+          ? facing(state.playerState.facing) 
+          : facing;
+        return {
+          playerState: {
+            ...state.playerState,
+            facing: newFacing,
+            direction: { x: 0, z: -1 } // Will be calculated based on facing
+          }
+        };
+      });
     },
     
     resetGame: () => {
