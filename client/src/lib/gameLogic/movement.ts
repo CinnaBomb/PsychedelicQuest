@@ -43,8 +43,8 @@ export function strafeLeft(playerState: PlayerState): Position {
   const leftFacing = (playerState.facing + 3) % 4; // Turn left from current facing
   const direction = DIRECTIONS[leftFacing];
   return {
-    x: playerState.position.x + direction.x,
-    z: playerState.position.z + direction.z
+    x: playerState.position.x - direction.x,
+    z: playerState.position.z - direction.z
   };
 }
 
@@ -52,7 +52,7 @@ export function strafeRight(playerState: PlayerState): Position {
   const rightFacing = (playerState.facing + 1) % 4; // Turn right from current facing
   const direction = DIRECTIONS[rightFacing];
   return {
-    x: playerState.position.x + direction.x,
-    z: playerState.position.z + direction.z
+    x: playerState.position.x - direction.x,
+    z: playerState.position.z - direction.z
   };
 }

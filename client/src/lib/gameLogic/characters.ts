@@ -2,48 +2,110 @@ import { Character, CharacterClass, Spell } from '@/types/game';
 
 export const CHARACTER_CLASSES: Record<CharacterClass, {
   name: string;
+  description: string;
   baseStats: Character['stats'];
   spells: Spell[];
 }> = {
-  warrior: {
-    name: 'Warrior',
+  anubis_guardian: {
+    name: 'Anubis Guardian',
+    description: 'Fierce protector of souls, wielding the strength of the jackal god',
     baseStats: {
       strength: 15,
       intelligence: 8,
-      defense: 12,
-      speed: 10
+      defense: 13,
+      speed: 9
     },
     spells: [
       {
-        id: 'power_attack',
-        name: 'Power Attack',
+        id: 'jackal_strike',
+        name: 'Jackal Strike',
         manaCost: 5,
         damage: 20,
         targetType: 'enemy'
+      },
+      {
+        id: 'soul_shield',
+        name: 'Soul Shield',
+        manaCost: 8,
+        healing: 15,
+        targetType: 'ally'
       }
     ]
   },
-  mage: {
-    name: 'Mage',
+  dream_weaver: {
+    name: 'Dream Weaver',
+    description: 'Manipulator of reality and illusions from the eternal dream',
     baseStats: {
-      strength: 8,
-      intelligence: 15,
-      defense: 8,
-      speed: 12
+      strength: 7,
+      intelligence: 16,
+      defense: 7,
+      speed: 13
     },
     spells: [
       {
-        id: 'fireball',
-        name: 'Fireball',
+        id: 'psychic_blast',
+        name: 'Psychic Blast',
         manaCost: 8,
         damage: 25,
         targetType: 'enemy'
       },
       {
-        id: 'heal',
-        name: 'Heal',
+        id: 'astral_heal',
+        name: 'Astral Heal',
         manaCost: 6,
         healing: 20,
+        targetType: 'ally'
+      }
+    ]
+  },
+  scarab_mystic: {
+    name: 'Scarab Mystic',
+    description: 'Channel the transformative power of the sacred beetle',
+    baseStats: {
+      strength: 10,
+      intelligence: 13,
+      defense: 10,
+      speed: 11
+    },
+    spells: [
+      {
+        id: 'metamorphosis',
+        name: 'Metamorphosis',
+        manaCost: 7,
+        damage: 18,
+        targetType: 'enemy'
+      },
+      {
+        id: 'regeneration',
+        name: 'Regeneration',
+        manaCost: 5,
+        healing: 18,
+        targetType: 'ally'
+      }
+    ]
+  },
+  sphinx_sage: {
+    name: 'Sphinx Sage',
+    description: 'Ancient wisdom keeper who bends fate with riddles and prophecy',
+    baseStats: {
+      strength: 9,
+      intelligence: 15,
+      defense: 11,
+      speed: 10
+    },
+    spells: [
+      {
+        id: 'riddle_curse',
+        name: 'Riddle Curse',
+        manaCost: 9,
+        damage: 23,
+        targetType: 'enemy'
+      },
+      {
+        id: 'prophecy_ward',
+        name: 'Prophecy Ward',
+        manaCost: 7,
+        healing: 16,
         targetType: 'ally'
       }
     ]
@@ -90,10 +152,10 @@ export function gainExperience(character: Character, amount: number): Character 
     
     // Level up stat increases
     const statIncrease = {
-      strength: character.class === 'warrior' ? 3 : 1,
-      intelligence: character.class === 'mage' ? 3 : 1,
+      strength: character.class === 'anubis_guardian' ? 3 : character.class === 'scarab_mystic' ? 2 : 1,
+      intelligence: character.class === 'dream_weaver' || character.class === 'sphinx_sage' ? 3 : character.class === 'scarab_mystic' ? 2 : 1,
       defense: 2,
-      speed: 1
+      speed: character.class === 'dream_weaver' ? 2 : 1
     };
     
     return {
@@ -103,8 +165,8 @@ export function gainExperience(character: Character, amount: number): Character 
       experienceToNext: newExpToNext,
       maxHealth: character.maxHealth + 20,
       health: character.maxHealth + 20,
-      maxMana: character.maxMana + (character.class === 'mage' ? 15 : 5),
-      mana: character.maxMana + (character.class === 'mage' ? 15 : 5),
+      maxMana: character.maxMana + (character.class === 'dream_weaver' || character.class === 'sphinx_sage' ? 15 : character.class === 'scarab_mystic' ? 10 : 5),
+      mana: character.maxMana + (character.class === 'dream_weaver' || character.class === 'sphinx_sage' ? 15 : character.class === 'scarab_mystic' ? 10 : 5),
       stats: {
         strength: character.stats.strength + statIncrease.strength,
         intelligence: character.stats.intelligence + statIncrease.intelligence,

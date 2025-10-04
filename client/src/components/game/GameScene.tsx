@@ -10,7 +10,7 @@ import Dungeon from './Dungeon';
 import TouchControls from './TouchControls';
 import { useGameState } from '@/lib/stores/useGameState';
 import { useAudio } from '@/lib/stores/useAudio';
-import { moveForward, moveBackward, turnLeft, turnRight } from '@/lib/gameLogic/movement';
+import { moveForward, moveBackward, turnLeft, turnRight, strafeLeft, strafeRight } from '@/lib/gameLogic/movement';
 import { isValidPosition, getDungeonCell } from '@/lib/gameLogic/dungeon';
 
 // Define control mapping
@@ -125,15 +125,36 @@ function PlayerController() {
           }
         }
         
+        // Handle strafing
+        if (state.left) {
+          const newPos = strafeLeft(playerState);
+          if (isValidPosition(dungeon, newPos)) {
+            updatePlayerPosition(newPos.x, newPos.z);
+            console.log('Strafed left to:', newPos);
+          } else {
+            console.log('Cannot strafe left - blocked');
+          }
+        }
+        
+        if (state.right) {
+          const newPos = strafeRight(playerState);
+          if (isValidPosition(dungeon, newPos)) {
+            updatePlayerPosition(newPos.x, newPos.z);
+            console.log('Strafed right to:', newPos);
+          } else {
+            console.log('Cannot strafe right - blocked');
+          }
+        }
+        
         // Handle turning
         if (state.turnLeft) {
-          const newFacing = turnLeft(playerState.facing);
+          const newFacing = turnRight(playerState.facing);
           updatePlayerFacing(newFacing);
           console.log('Turned left, now facing:', newFacing);
         }
         
         if (state.turnRight) {
-          const newFacing = turnRight(playerState.facing);
+          const newFacing = turnLeft(playerState.facing);
           updatePlayerFacing(newFacing);
           console.log('Turned right, now facing:', newFacing);
         }

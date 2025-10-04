@@ -1,13 +1,15 @@
 import { create } from 'zustand';
-import { Character } from '@/types/game';
+import { Character, CharacterClass } from '@/types/game';
 import { createCharacter, gainExperience } from '@/lib/gameLogic/characters';
+
+export const MAX_PARTY_SIZE = 4;
 
 interface PartyState {
   party: Character[];
   activeCharacterIndex: number;
   
   // Actions
-  addCharacter: (name: string, characterClass: 'warrior' | 'mage') => void;
+  addCharacter: (name: string, characterClass: CharacterClass) => void;
   removeCharacter: (id: string) => void;
   setActiveCharacter: (index: number) => void;
   updateCharacter: (id: string, updates: Partial<Character>) => void;
@@ -22,6 +24,11 @@ export const useParty = create<PartyState>((set, get) => ({
   activeCharacterIndex: 0,
   
   addCharacter: (name, characterClass) => {
+    const state = get();
+    if (state.party.length >= MAX_PARTY_SIZE) {
+      console.warn(`Cannot add character: Party is full (max ${MAX_PARTY_SIZE})`);
+      return;
+    }
     const character = createCharacter(name, characterClass);
     set((state) => ({
       party: [...state.party, character]

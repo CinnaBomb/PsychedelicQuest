@@ -8,7 +8,7 @@ export interface Direction {
   z: number;
 }
 
-export type CharacterClass = 'warrior' | 'mage';
+export type CharacterClass = 'anubis_guardian' | 'dream_weaver' | 'scarab_mystic' | 'sphinx_sage';
 
 export interface Character {
   id: string;

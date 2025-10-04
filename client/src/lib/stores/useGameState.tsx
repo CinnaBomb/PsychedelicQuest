@@ -7,9 +7,11 @@ interface GameState {
   phase: GamePhase;
   playerState: PlayerState;
   dungeon: DungeonCell[][];
+  gameName: string;
   
   // Actions
   setPhase: (phase: GamePhase) => void;
+  setGameName: (name: string) => void;
   initializeGame: () => void;
   updatePlayerPosition: (x: number, z: number) => void;
   updatePlayerFacing: (facing: number) => void;
@@ -27,8 +29,11 @@ export const useGameState = create<GameState>()(
     phase: 'menu',
     playerState: initialPlayerState,
     dungeon: [],
+    gameName: '',
     
     setPhase: (phase) => set({ phase }),
+    
+    setGameName: (name) => set({ gameName: name }),
     
     initializeGame: () => {
       const dungeon = generateDungeon();
@@ -62,7 +67,8 @@ export const useGameState = create<GameState>()(
       set({
         phase: 'menu',
         playerState: initialPlayerState,
-        dungeon: []
+        dungeon: [],
+        gameName: ''
       });
     }
   }))

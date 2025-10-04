@@ -7,41 +7,98 @@ import GameUI from "./components/game/GameUI";
 import CharacterCreation from "./components/game/CharacterCreation";
 import Combat from "./components/game/Combat";
 import Inventory from "./components/game/Inventory";
+import { AuthScreen } from "./components/game/AuthScreen";
+import { SaveLoadMenu } from "./components/game/SaveLoadMenu";
 
 import { useGameState } from "./lib/stores/useGameState";
 import { useParty } from "./lib/stores/useParty";
 import { useAudio } from "./lib/stores/useAudio";
+import { useAuth } from "./lib/stores/useAuth";
+import { useSaveGame } from "./lib/stores/useSaveGame";
 import { Button } from "./components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./components/ui/dialog";
+import { Input } from "./components/ui/input";
+import { Label } from "./components/ui/label";
+import { LogOut, Save } from "lucide-react";
 
 const queryClient = new QueryClient();
 
 function MainMenu() {
-  const { setPhase } = useGameState();
+  const { setPhase, setGameName } = useGameState();
   const { resetParty } = useParty();
+  const { user, logout } = useAuth();
+  const { saves, getSaves } = useSaveGame();
+  const [showSaveMenu, setShowSaveMenu] = useState(false);
+  const [showNameDialog, setShowNameDialog] = useState(false);
+  const [newGameName, setNewGameName] = useState('');
 
-  const handleNewGame = () => {
+  // Load saves to generate default name
+  useEffect(() => {
+    if (user) {
+      getSaves(user.id);
+    }
+  }, [user, getSaves]);
+
+  const handleNewGameClick = () => {
+    // Generate default name based on existing saves
+    const defaultName = `Game ${saves.length + 1}`;
+    setNewGameName(defaultName);
+    setShowNameDialog(true);
+  };
+
+  const handleStartNewGame = () => {
+    const gameName = newGameName.trim() || `Game ${saves.length + 1}`;
+    setGameName(gameName);
     resetParty();
     setPhase('character_creation');
+    setShowNameDialog(false);
+  };
+
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-gray-900 to-black text-white">
       <Card className="w-full max-w-md bg-gray-800 border-gray-700">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-white mb-2">
-            Undercroft RPG
-          </CardTitle>
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex-1" />
+            <CardTitle className="text-3xl font-bold text-white flex-1 text-center">
+              Undercroft RPG
+            </CardTitle>
+            <div className="flex-1 flex justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="text-gray-400 hover:text-white"
+              >
+                <LogOut className="w-4 h-4 mr-1" />
+                Logout
+              </Button>
+            </div>
+          </div>
           <p className="text-gray-400">
-            A classic dungeon crawler adventure
+            Welcome, {user?.username}!
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button 
-            onClick={handleNewGame}
+            onClick={handleNewGameClick}
             className="w-full py-3 text-lg"
           >
             New Game
+          </Button>
+          
+          <Button 
+            onClick={() => setShowSaveMenu(true)}
+            variant="outline"
+            className="w-full py-3 text-lg"
+          >
+            <Save className="w-5 h-5 mr-2" />
+            Load Game
           </Button>
           
           <div className="text-center text-sm text-gray-500 space-y-1">
@@ -51,6 +108,49 @@ function MainMenu() {
           </div>
         </CardContent>
       </Card>
+      
+      {showSaveMenu && (
+        <SaveLoadMenu onClose={() => setShowSaveMenu(false)} />
+      )}
+
+      <Dialog open={showNameDialog} onOpenChange={setShowNameDialog}>
+        <DialogContent className="sm:max-w-[425px] bg-gray-800 border-gray-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-white">New Game</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Give your adventure a name
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="game-name" className="text-right text-gray-300">
+                Name
+              </Label>
+              <Input
+                id="game-name"
+                value={newGameName}
+                onChange={(e) => setNewGameName(e.target.value)}
+                placeholder={`Game ${saves.length + 1}`}
+                className="col-span-3 bg-gray-700 border-gray-600 text-white"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleStartNewGame();
+                  }
+                }}
+                autoFocus
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNameDialog(false)} className="bg-gray-700 text-white border-gray-600 hover:bg-gray-600">
+              Cancel
+            </Button>
+            <Button onClick={handleStartNewGame}>
+              Start Game
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -120,16 +220,31 @@ function SoundManager() {
 function App() {
   const { phase } = useGameState();
   const [showCanvas, setShowCanvas] = useState(false);
+  const { user, isLoading: authLoading, checkAuth } = useAuth();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   useEffect(() => {
     setShowCanvas(true);
   }, []);
 
-  if (!showCanvas) {
+  // Show loading while checking authentication
+  if (authLoading || !showCanvas) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-gray-900 text-white">
         <div>Loading...</div>
       </div>
+    );
+  }
+
+  // Show auth screen if not logged in
+  if (!user) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <AuthScreen />
+      </QueryClientProvider>
     );
   }
 
