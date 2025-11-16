@@ -58,6 +58,20 @@ export const dungeonState = pgTable("dungeon_state", {
   exploredRooms: jsonb("explored_rooms"), // Array of explored positions
 });
 
+// City Maps Table - for storing custom maps created in the editor
+export const cityMaps = pgTable("city_maps", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  mapId: text("map_id").notNull().unique(), // e.g., "starter_village", "mystic_forest"
+  name: text("name").notNull(),
+  description: text("description"),
+  mapData: jsonb("map_data").notNull(), // Full CityMap object
+  isPublic: boolean("is_public").default(false), // Whether other players can use this map
+  version: text("version").notNull().default("1.0.0"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // Insert schemas
 export const insertGameSaveSchema = createInsertSchema(gameSaves).omit({
   id: true,
@@ -77,6 +91,12 @@ export const insertDungeonStateSchema = createInsertSchema(dungeonState).omit({
   id: true,
 });
 
+export const insertCityMapSchema = createInsertSchema(cityMaps).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type InsertGameSave = z.infer<typeof insertGameSaveSchema>;
 export type GameSave = typeof gameSaves.$inferSelect;
@@ -86,3 +106,5 @@ export type InsertInventory = z.infer<typeof insertInventorySchema>;
 export type Inventory = typeof inventory.$inferSelect;
 export type InsertDungeonState = z.infer<typeof insertDungeonStateSchema>;
 export type DungeonState = typeof dungeonState.$inferSelect;
+export type InsertCityMap = z.infer<typeof insertCityMapSchema>;
+export type CityMapRecord = typeof cityMaps.$inferSelect;

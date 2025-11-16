@@ -1,0 +1,65 @@
+{
+  "id": "my_custom_area",
+  "name": "My Custom Area",
+  "description": "Your description here",
+  "size": { "width": 10, "height": 10 },
+  "startPosition": { "x": 1, "z": 1 },
+  "cells": [
+    [
+      {"x": 0, "z": 0, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 1, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 2, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 3, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 4, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 5, "type": "exit", "walkable": true, "color": "#fbbf24", "description": "Exit to another area"},
+      {"x": 0, "z": 6, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 7, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 8, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 9, "type": "wall", "walkable": false, "color": "#374151"}
+    ],
+    [
+      {"x": 1, "z": 0, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 1, "z": 1, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 2, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 3, "type": "npc", "walkable": true, "color": "#3b82f6", "npcId": "my_npc"},
+      {"x": 1, "z": 4, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 5, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 6, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 7, "type": "chest", "walkable": true, "color": "#eab308", "itemId": "treasure"},
+      {"x": 1, "z": 8, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 9, "type": "wall", "walkable": false, "color": "#374151"}
+    ]
+  ],
+  "connections": [
+    {
+      "id": "my_exit",
+      "targetCityId": "starter_village",
+      "exitPosition": { "x": 0, "z": 5 },
+      "entrancePosition": { "x": 7, "z": 7 },
+      "transportType": "portal",
+      "name": "Back to Village",
+      "description": "Return to the starter village"
+    }
+  ],
+  "npcs": [
+    {
+      "id": "my_npc",
+      "name": "Custom NPC",
+      "description": "A helpful character",
+      "position": { "x": 1, "z": 3 },
+      "dialogue": [
+        "Hello adventurer!",
+        "Welcome to my custom area!",
+        "Feel free to explore around."
+      ],
+      "sprite": "villager"
+    }
+  ],
+  "shops": [],
+  "theme": "village",
+  "dangerLevel": 1,
+  "discoveredByDefault": true,
+  "version": "1.0.0",
+  "createdAt": "2025-10-07T00:00:00.000Z",
+  "updatedAt": "2025-10-07T00:00:00.000Z"
+}

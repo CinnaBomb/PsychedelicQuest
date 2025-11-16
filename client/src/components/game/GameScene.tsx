@@ -12,6 +12,8 @@ import { useGameState } from '@/lib/stores/useGameState';
 import { useAudio } from '@/lib/stores/useAudio';
 import { moveForward, moveBackward, turnLeft, turnRight, strafeLeft, strafeRight } from '@/lib/gameLogic/movement';
 import { isValidPosition, getDungeonCell } from '@/lib/gameLogic/dungeon';
+import { mapLoader } from '@/lib/gameLogic/mapLoader';
+import { CityConnection } from '@/types/city';
 
 // Define control mapping
 enum Controls {
@@ -93,7 +95,9 @@ function PlayerController() {
     playerState, 
     updatePlayerPosition, 
     updatePlayerFacing,
-    dungeon
+    dungeon,
+    currentMapId,
+    loadMap
   } = useGameState();
   
   const { playHit } = useAudio();
@@ -102,6 +106,27 @@ function PlayerController() {
   const lastTurnLeftTime = useRef(0);
   const lastTurnRightTime = useRef(0);
   const TURN_DEBOUNCE_MS = 150; // Minimum time between turns
+
+  // Function to check for map transitions
+  const checkMapTransition = async (position: { x: number; z: number }) => {
+    try {
+      // Load current map to check for connections
+      const currentMap = await mapLoader.loadMap(currentMapId);
+      if (!currentMap) return;
+
+      // Check if the position matches any exit
+      const connection = currentMap.connections.find((conn: CityConnection) => 
+        conn.exitPosition.x === position.x && conn.exitPosition.z === position.z
+      );
+
+      if (connection) {
+        console.log(`🚪 Found exit to ${connection.name}!`);
+        await loadMap(connection.targetCityId, connection.entrancePosition);
+      }
+    } catch (error) {
+      console.error('Error checking map transition:', error);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = subscribe(
@@ -113,6 +138,9 @@ function PlayerController() {
           if (isValidPosition(dungeon, newPos)) {
             updatePlayerPosition(newPos.x, newPos.z);
             console.log('Moved forward to:', newPos);
+            
+            // Check for map transitions
+            checkMapTransition(newPos);
           } else {
             console.log('Cannot move forward - blocked');
           }
@@ -123,6 +151,7 @@ function PlayerController() {
           if (isValidPosition(dungeon, newPos)) {
             updatePlayerPosition(newPos.x, newPos.z);
             console.log('Moved backward to:', newPos);
+            checkMapTransition(newPos);
           } else {
             console.log('Cannot move backward - blocked');
           }
@@ -134,6 +163,7 @@ function PlayerController() {
           if (isValidPosition(dungeon, newPos)) {
             updatePlayerPosition(newPos.x, newPos.z);
             console.log('Strafed left to:', newPos);
+            checkMapTransition(newPos);
           } else {
             console.log('Cannot strafe left - blocked');
           }
@@ -144,6 +174,7 @@ function PlayerController() {
           if (isValidPosition(dungeon, newPos)) {
             updatePlayerPosition(newPos.x, newPos.z);
             console.log('Strafed right to:', newPos);
+            checkMapTransition(newPos);
           } else {
             console.log('Cannot strafe right - blocked');
           }

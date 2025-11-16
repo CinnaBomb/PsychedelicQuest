@@ -275,6 +275,176 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============================================
+  // CITY MAP ROUTES
+  // ============================================
+  
+  // Get all public maps + user's private maps
+  app.get("/api/maps", requireAuth, async (req, res) => {
+    try {
+      const maps = await storage.getCityMaps(req.session.userId!);
+      res.json(maps);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get a specific map by ID
+  app.get("/api/maps/:mapId", async (req, res) => {
+    try {
+      const mapId = req.params.mapId;
+      const userId = req.session.userId || null;
+      
+      const map = await storage.getCityMapById(mapId, userId);
+      if (!map) {
+        return res.status(404).json({ error: "Map not found" });
+      }
+      
+      res.json(map);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Save a new map or update existing
+  app.post("/api/maps", requireAuth, async (req, res) => {
+    try {
+      const { mapId, name, description, mapData, isPublic, version } = req.body;
+      
+      if (!mapId || !name || !mapData) {
+        return res.status(400).json({ error: "mapId, name, and mapData are required" });
+      }
+      
+      const mapRecord = await storage.saveCityMap({
+        userId: req.session.userId!,
+        mapId,
+        name,
+        description: description || '',
+        mapData,
+        isPublic: isPublic || false,
+        version: version || '1.0.0'
+      });
+      
+      res.json(mapRecord);
+    } catch (error: any) {
+      if (error.message.includes('unique constraint')) {
+        // Map ID already exists, try updating instead
+        try {
+          const updated = await storage.updateCityMap(req.body.mapId, req.session.userId!, {
+            name: req.body.name,
+            description: req.body.description,
+            mapData: req.body.mapData,
+            isPublic: req.body.isPublic,
+            version: req.body.version || '1.0.0'
+          });
+          
+          if (!updated) {
+            return res.status(404).json({ error: "Map not found or not owned by user" });
+          }
+          
+          res.json(updated);
+        } catch (updateError: any) {
+          res.status(500).json({ error: updateError.message });
+        }
+      } else {
+        res.status(500).json({ error: error.message });
+      }
+    }
+  });
+
+  // Delete a map
+  app.delete("/api/maps/:mapId", requireAuth, async (req, res) => {
+    try {
+      const mapId = req.params.mapId;
+      
+      const deleted = await storage.deleteCityMap(mapId, req.session.userId!);
+      if (!deleted) {
+        return res.status(404).json({ error: "Map not found or not owned by user" });
+      }
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Upload map to public/maps folder
+  app.post("/api/maps/upload", async (req, res) => {
+    try {
+      const { mapData, filename } = req.body;
+      
+      if (!mapData || !filename) {
+        return res.status(400).json({ error: "mapData and filename are required" });
+      }
+
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      
+      // Ensure maps directory exists
+      const mapsDir = path.join(process.cwd(), 'client', 'public', 'maps');
+      try {
+        await fs.access(mapsDir);
+      } catch {
+        await fs.mkdir(mapsDir, { recursive: true });
+      }
+      
+      // Write the map file
+      const filePath = path.join(mapsDir, filename);
+      await fs.writeFile(filePath, JSON.stringify(mapData, null, 2));
+      
+      res.json({ 
+        success: true, 
+        message: `Map uploaded successfully to /client/public/maps/${filename}`,
+        filename,
+        path: `/maps/${filename}`
+      });
+    } catch (error: any) {
+      console.error('Error uploading map:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Import map from JSON file to database
+  app.post("/api/maps/import-json/:mapId", requireAuth, async (req, res) => {
+    try {
+      const mapId = req.params.mapId;
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      
+      // Try to read the JSON file
+      const mapsDir = path.join(process.cwd(), 'client', 'public', 'maps');
+      const filePath = path.join(mapsDir, `${mapId}.json`);
+      
+      try {
+        const fileContent = await fs.readFile(filePath, 'utf-8');
+        const mapData = JSON.parse(fileContent);
+        
+        // Import the map into database
+        const mapRecord = await storage.saveCityMap({
+          userId: req.session.userId!,
+          mapId: mapData.id || mapId,
+          name: mapData.name || mapId,
+          description: mapData.description || `Imported from ${mapId}.json`,
+          mapData: mapData,
+          isPublic: true,
+          version: mapData.version || '1.0.0'
+        });
+        
+        res.json({
+          success: true,
+          message: `Map "${mapData.name || mapId}" imported successfully`,
+          mapRecord
+        });
+        
+      } catch (fileError) {
+        res.status(404).json({ error: `Map file ${mapId}.json not found` });
+      }
+    } catch (error: any) {
+      console.error('Error importing map:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

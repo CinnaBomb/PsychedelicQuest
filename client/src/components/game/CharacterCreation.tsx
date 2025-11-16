@@ -91,8 +91,13 @@ export default function CharacterCreation() {
     });
   };
 
-  const handleStartGame = () => {
-    initializeGame();
+    const handleStartGame = async () => {
+    try {
+      await initializeGame();
+    } catch (error) {
+      console.error('Failed to initialize game:', error);
+      // Game will fall back to procedural generation
+    }
   };
 
   const isPartyFull = party.length >= MAX_PARTY_SIZE;

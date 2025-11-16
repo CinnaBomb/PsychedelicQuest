@@ -3,6 +3,8 @@ import { useGameState } from '@/lib/stores/useGameState';
 import { useAudio } from '@/lib/stores/useAudio';
 import { moveForward, moveBackward, turnLeft, turnRight, strafeLeft, strafeRight } from '@/lib/gameLogic/movement';
 import { isValidPosition, getDungeonCell } from '@/lib/gameLogic/dungeon';
+import { mapLoader } from '@/lib/gameLogic/mapLoader';
+import { CityConnection } from '@/types/city';
 
 interface TouchButtonProps {
   onPress: () => void;
@@ -165,16 +167,38 @@ export default function TouchControls() {
     playerState, 
     updatePlayerPosition, 
     updatePlayerFacing,
-    dungeon
+    dungeon,
+    currentMapId,
+    loadMap
   } = useGameState();
   
   const { playHit } = useAudio();
+
+  // Function to check for map transitions
+  const checkMapTransition = async (position: { x: number; z: number }) => {
+    try {
+      const currentMap = await mapLoader.loadMap(currentMapId);
+      if (!currentMap) return;
+
+      const connection = currentMap.connections.find((conn: CityConnection) => 
+        conn.exitPosition.x === position.x && conn.exitPosition.z === position.z
+      );
+
+      if (connection) {
+        console.log(`🚪 Touch: Found exit to ${connection.name}!`);
+        await loadMap(connection.targetCityId, connection.entrancePosition);
+      }
+    } catch (error) {
+      console.error('Touch: Error checking map transition:', error);
+    }
+  };
 
   const handleMoveForward = () => {
     const newPos = moveForward(playerState);
     if (isValidPosition(dungeon, newPos)) {
       updatePlayerPosition(newPos.x, newPos.z);
       console.log('Touch: Moved forward to:', newPos);
+      checkMapTransition(newPos);
     } else {
       console.log('Touch: Cannot move forward - blocked');
     }
@@ -185,6 +209,7 @@ export default function TouchControls() {
     if (isValidPosition(dungeon, newPos)) {
       updatePlayerPosition(newPos.x, newPos.z);
       console.log('Touch: Moved backward to:', newPos);
+      checkMapTransition(newPos);
     } else {
       console.log('Touch: Cannot move backward - blocked');
     }
@@ -195,6 +220,7 @@ export default function TouchControls() {
     if (isValidPosition(dungeon, newPos)) {
       updatePlayerPosition(newPos.x, newPos.z);
       console.log('Touch: Strafed left to:', newPos);
+      checkMapTransition(newPos);
     } else {
       console.log('Touch: Cannot strafe left - blocked');
     }
@@ -205,6 +231,7 @@ export default function TouchControls() {
     if (isValidPosition(dungeon, newPos)) {
       updatePlayerPosition(newPos.x, newPos.z);
       console.log('Touch: Strafed right to:', newPos);
+      checkMapTransition(newPos);
     } else {
       console.log('Touch: Cannot strafe right - blocked');
     }
@@ -243,9 +270,9 @@ export default function TouchControls() {
         }}
       >
         <div className="flex flex-col items-center space-y-3 p-2">
-          {/* Backward Button (Up Arrow - Reversed) */}
+          {/* Forward Button*/}
           <TouchButton
-            onPress={handleMoveBackward}
+            onPress={handleMoveForward}
             onRelease={() => {}}
             className="w-20 h-20 text-2xl sm:w-16 sm:h-16 sm:text-xl"
           >
@@ -270,9 +297,9 @@ export default function TouchControls() {
             </TouchButton>
           </div>
           
-          {/* Forward Button (Down Arrow - Reversed) */}
+          {/* Backward Button*/}
           <TouchButton
-            onPress={handleMoveForward}
+            onPress={handleMoveBackward}
             onRelease={() => {}}
             className="w-20 h-20 text-2xl sm:w-16 sm:h-16 sm:text-xl"
           >
@@ -321,13 +348,6 @@ export default function TouchControls() {
         </div>
       </div>
 
-      {/* Instructions - Top Center (hidden on small screens to save space) */}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 pointer-events-auto hidden sm:block">
-        <div className="bg-black/70 text-white px-4 py-2 rounded-lg text-sm text-center backdrop-blur-sm">
-          <div className="font-bold">Touch Controls</div>
-          <div className="text-xs opacity-80">Left: Move • Right: Turn & Use</div>
-        </div>
-      </div>
     </div>
   );
 }

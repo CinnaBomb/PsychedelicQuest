@@ -1,12 +1,13 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, or } from "drizzle-orm";
 import {
   users,
   gameSaves,
   characters,
   inventory,
   dungeonState,
+  cityMaps,
   type User,
   type InsertUser,
   type GameSave,
@@ -17,6 +18,8 @@ import {
   type InsertInventory,
   type DungeonState,
   type InsertDungeonState,
+  type CityMapRecord,
+  type InsertCityMap,
 } from "@shared/schema";
 
 if (!process.env.DATABASE_URL) {
@@ -56,6 +59,13 @@ export interface IStorage {
   // Dungeon State methods
   saveDungeonState(saveId: number, dungeonData: any, exploredRooms?: any): Promise<DungeonState>;
   getDungeonState(saveId: number): Promise<DungeonState | undefined>;
+  
+  // City Map methods
+  getCityMaps(userId: number): Promise<CityMapRecord[]>;
+  getCityMapById(mapId: string, userId?: number | null): Promise<CityMapRecord | undefined>;
+  saveCityMap(data: InsertCityMap): Promise<CityMapRecord>;
+  updateCityMap(mapId: string, userId: number, data: Partial<InsertCityMap>): Promise<CityMapRecord | undefined>;
+  deleteCityMap(mapId: string, userId: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -203,6 +213,77 @@ export class DatabaseStorage implements IStorage {
       .from(dungeonState)
       .where(eq(dungeonState.saveId, saveId));
     return state;
+  }
+
+  // City Map methods
+  async getCityMaps(userId: number): Promise<CityMapRecord[]> {
+    // Get public maps + user's private maps
+    const maps = await db
+      .select()
+      .from(cityMaps)
+      .where(
+        or(
+          eq(cityMaps.isPublic, true),
+          eq(cityMaps.userId, userId)
+        )
+      )
+      .orderBy(desc(cityMaps.updatedAt));
+    
+    return maps;
+  }
+
+  async getCityMapById(mapId: string, userId?: number | null): Promise<CityMapRecord | undefined> {
+    let whereCondition;
+    
+    if (userId) {
+      // Get map if it's public OR owned by the user
+      whereCondition = and(
+        eq(cityMaps.mapId, mapId),
+        or(
+          eq(cityMaps.isPublic, true),
+          eq(cityMaps.userId, userId)
+        )
+      );
+    } else {
+      // Only public maps for non-authenticated users
+      whereCondition = and(
+        eq(cityMaps.mapId, mapId),
+        eq(cityMaps.isPublic, true)
+      );
+    }
+
+    const [map] = await db
+      .select()
+      .from(cityMaps)
+      .where(whereCondition);
+    
+    return map;
+  }
+
+  async saveCityMap(data: InsertCityMap): Promise<CityMapRecord> {
+    const [map] = await db
+      .insert(cityMaps)
+      .values(data)
+      .returning();
+    return map;
+  }
+
+  async updateCityMap(mapId: string, userId: number, data: Partial<InsertCityMap>): Promise<CityMapRecord | undefined> {
+    const [updated] = await db
+      .update(cityMaps)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(cityMaps.mapId, mapId), eq(cityMaps.userId, userId)))
+      .returning();
+    
+    return updated;
+  }
+
+  async deleteCityMap(mapId: string, userId: number): Promise<boolean> {
+    const result = await db
+      .delete(cityMaps)
+      .where(and(eq(cityMaps.mapId, mapId), eq(cityMaps.userId, userId)));
+    
+    return (result.rowCount || 0) > 0;
   }
 }
 

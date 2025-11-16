@@ -77,6 +77,37 @@ export default function Dungeon() {
               <meshStandardMaterial map={wallTexture} />
             </mesh>
           );
+        } else if (cell.type === 'stairs') {
+          // Render stairs/exits with special glowing appearance
+          floors.push(
+            <mesh key={`exit-floor-${key}`} position={[x, 0, z]} receiveShadow>
+              <boxGeometry args={[1, 0.1, 1]} />
+              <meshStandardMaterial color="#fbbf24" emissive="#fbbf24" emissiveIntensity={0.3} />
+            </mesh>
+          );
+          
+          // Add a glowing portal effect
+          floors.push(
+            <mesh key={`exit-portal-${key}`} position={[x, 0.5, z]}>
+              <cylinderGeometry args={[0.4, 0.4, 0.1, 8]} />
+              <meshStandardMaterial color="#8b5cf6" emissive="#8b5cf6" emissiveIntensity={0.5} transparent opacity={0.7} />
+            </mesh>
+          );
+        } else if (cell.type === 'door') {
+          // Render doors
+          floors.push(
+            <mesh key={`door-floor-${key}`} position={[x, 0, z]} receiveShadow>
+              <boxGeometry args={[1, 0.1, 1]} />
+              <meshStandardMaterial map={floorTexture} />
+            </mesh>
+          );
+          
+          walls.push(
+            <mesh key={`door-${key}`} position={[x, 0.5, z]} castShadow receiveShadow>
+              <boxGeometry args={[0.8, 1.5, 0.1]} />
+              <meshStandardMaterial color="#8b4513" />
+            </mesh>
+          );
         }
       });
     });

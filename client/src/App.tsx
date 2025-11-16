@@ -9,6 +9,7 @@ import Combat from "./components/game/Combat";
 import Inventory from "./components/game/Inventory";
 import { AuthScreen } from "./components/game/AuthScreen";
 import { SaveLoadMenu } from "./components/game/SaveLoadMenu";
+import MapEditor from "./components/editor/MapEditor";
 
 import { useGameState } from "./lib/stores/useGameState";
 import { useParty } from "./lib/stores/useParty";
@@ -20,7 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./components/ui/dialog";
 import { Input } from "./components/ui/input";
 import { Label } from "./components/ui/label";
-import { LogOut, Save } from "lucide-react";
+import { LogOut, Save, Edit } from "lucide-react";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ function MainMenu() {
   const { saves, getSaves } = useSaveGame();
   const [showSaveMenu, setShowSaveMenu] = useState(false);
   const [showNameDialog, setShowNameDialog] = useState(false);
+  const [showMapEditor, setShowMapEditor] = useState(false);
   const [newGameName, setNewGameName] = useState('');
 
   // Load saves to generate default name
@@ -101,6 +103,15 @@ function MainMenu() {
             Load Game
           </Button>
           
+          <Button 
+            onClick={() => setShowMapEditor(true)}
+            variant="outline"
+            className="w-full py-2 text-sm bg-purple-600 hover:bg-purple-700 border-purple-500"
+          >
+            <Edit className="w-4 h-4 mr-2" />
+            Map Editor (Dev)
+          </Button>
+          
           <div className="text-center text-sm text-gray-500 space-y-1">
             <div>Movement: WASD or Arrow Keys</div>
             <div>Turn: Q/E Keys</div>
@@ -111,6 +122,17 @@ function MainMenu() {
       
       {showSaveMenu && (
         <SaveLoadMenu onClose={() => setShowSaveMenu(false)} />
+      )}
+
+      {showMapEditor && (
+        <div className="fixed inset-0 z-50 bg-white">
+          <div className="absolute top-4 right-4 z-10">
+            <Button onClick={() => setShowMapEditor(false)} variant="outline">
+              ← Back to Menu
+            </Button>
+          </div>
+          <MapEditor />
+        </div>
       )}
 
       <Dialog open={showNameDialog} onOpenChange={setShowNameDialog}>

@@ -1,0 +1,99 @@
+{
+  "id": "starter_village",
+  "name": "Starter Village",
+   "connections": [
+    {
+      "id": "village_to_forest",
+      "targetCityId": "mystic_forest",
+      "exitPosition": { "x": 14, "z": 10 },
+      "entrancePosition": { "x": 1, "z": 10 },
+      "transportType": "road",
+      "name": "To Mystic Forest",
+      "description": "A mysterious path leading into the ancient forest"
+    }
+  ],
+  "description": "A peaceful village where new adventurers begin their journey",
+  "size": { "width": 15, "height": 15 },
+  "startPosition": { "x": 7, "z": 7 },
+  "cells": [
+    [
+      {"x": 0, "z": 0, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 1, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 2, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 3, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 4, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 5, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 6, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 7, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 8, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 9, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 10, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 11, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 12, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 13, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 0, "z": 14, "type": "wall", "walkable": false, "color": "#374151"}
+    ],
+    [
+      {"x": 1, "z": 0, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 1, "z": 1, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 2, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 3, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 4, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 5, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 6, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 7, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 8, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 9, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 10, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 11, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 12, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 13, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 1, "z": 14, "type": "wall", "walkable": false, "color": "#374151"}
+    ],
+    [
+      {"x": 2, "z": 0, "type": "wall", "walkable": false, "color": "#374151"},
+      {"x": 2, "z": 1, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 2, "z": 2, "type": "npc", "walkable": true, "color": "#7c3aed", "npcId": "village_elder"},
+      {"x": 2, "z": 3, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 2, "z": 4, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 2, "z": 5, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 2, "z": 6, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 2, "z": 7, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 2, "z": 8, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 2, "z": 9, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 2, "z": 10, "type": "shop", "walkable": true, "color": "#dc2626", "shopId": "general_store"},
+      {"x": 2, "z": 11, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 2, "z": 12, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 2, "z": 13, "type": "floor", "walkable": true, "color": "#f3f4f6"},
+      {"x": 2, "z": 14, "type": "wall", "walkable": false, "color": "#374151"}
+    ]
+  ],
+  "npcs": [
+    {
+      "id": "village_elder",
+      "name": "Elder Marcus",
+      "description": "The wise village elder who guides new adventurers",
+      "position": {"x": 2, "z": 2},
+      "dialogue": [
+        "Welcome to our village, young adventurer!",
+        "The Dark Forest to the north holds many dangers, but also great treasures.",
+        "Be sure to visit the shop and prepare yourself before venturing forth."
+      ]
+    }
+  ],
+  "shops": [
+    {
+      "id": "general_store",
+      "name": "Village General Store",
+      "description": "A small shop selling basic adventuring supplies",
+      "items": ["health_potion", "basic_sword", "leather_armor"],
+      "npcId": "shopkeeper_sarah"
+    }
+  ],
+  "theme": "village",
+  "dangerLevel": 1,
+  "discoveredByDefault": true,
+  "version": "1.0.0",
+  "createdAt": "2025-10-07T00:00:00Z",
+  "updatedAt": "2025-10-07T00:00:00Z"
+}
